@@ -1,15 +1,28 @@
-# WebScraper
+# WebScraper with Proxy Harvesting
 
-A Python-based web scraping tool with built-in evasion techniques for conducting web crawls while circumventing detection mechanisms.
+A Python-based web scraping tool that automatically harvests country-specific proxies and uses advanced evasion techniques to avoid detection. This tool combines web scraping capabilities with intelligent proxy management for maximum effectiveness and anonymity.
 
 ## Features
 
+### Core Scraping Features
 - **Request Throttling**: Implements intelligent rate limiting to avoid overwhelming target servers
 - **Randomized Intervals**: Uses varied delays between requests to simulate organic browsing patterns
 - **User-Agent Rotation**: Cycles through different browser identifiers for each request
 - **Proxy-Based IP Rotation**: Routes traffic through proxy servers to mask the originating address
 - **Recursive Crawling**: Automatically discovers and crawls linked pages up to a configurable depth
 - **JSON Output**: Stores scraped data in structured JSON format
+
+### Proxy Harvesting & Management
+- **Automatic Proxy Harvesting**: Scrapes proxies from multiple free proxy provider websites
+- **Country-Specific Filtering**: Filter proxies by country codes (e.g., US, UK, CA, etc.)
+- **Multi-Source Harvesting**: Collects proxies from:
+  - free-proxy-list.net
+  - sslproxies.org
+  - proxyscrape.com
+  - geonode.com
+- **Proxy Validation**: Tests harvested proxies to ensure they're working before use
+- **Auto-Refresh**: Automatically harvests new proxies when the pool falls below minimum threshold
+- **Protocol Support**: Supports HTTP, HTTPS, SOCKS4, and SOCKS5 proxies
 
 ## Installation
 
@@ -61,31 +74,61 @@ docker run -d -v $(pwd):/app -w /app webscraper python -m webscraper URL
 | `--delay_max` | float | 5.0 | Maximum delay between requests (seconds) |
 | `--use_proxy` | flag | false | Enable proxy rotation |
 | `--proxy_file` | string | None | Path to file containing proxy list |
+| `--auto_harvest` | flag | false | Automatically harvest proxies from online sources |
+| `--countries` | string | None | Comma-separated country codes (e.g., US,UK,CA) |
+| `--no_validate` | flag | false | Skip proxy validation (faster but less reliable) |
+| `--min_proxies` | int | 10 | Minimum proxies to maintain (triggers auto-harvest) |
 
 ## Examples
 
-### Example 1: Basic Scraping
+### Example 1: Basic Scraping (No Proxies)
 
 ```bash
 python -m webscraper https://example.com
 ```
 
-### Example 2: Deep Crawl with Fresh Start
+### Example 2: Scraping with Auto-Harvested Proxies
 
 ```bash
-python -m webscraper https://example.com --start_afresh true --max_depth 3
+python -m webscraper https://example.com --use_proxy --auto_harvest
 ```
 
-### Example 3: With Proxy Rotation
+### Example 3: Scraping with Country-Specific Proxies (US Only)
+
+```bash
+python -m webscraper https://example.com --use_proxy --auto_harvest --countries US
+```
+
+### Example 4: Scraping with Multiple Countries (US, UK, Canada)
+
+```bash
+python -m webscraper https://example.com --use_proxy --auto_harvest --countries US,UK,CA
+```
+
+### Example 5: Using Existing Proxy List
 
 ```bash
 python -m webscraper https://example.com --use_proxy --proxy_file proxies.txt
 ```
 
-### Example 4: Custom Delays
+### Example 6: Deep Crawl with Auto-Harvested Proxies
 
 ```bash
-python -m webscraper https://example.com --delay_min 2.5 --delay_max 7.5
+python -m webscraper https://example.com --use_proxy --auto_harvest --max_depth 3 --countries US
+```
+
+### Example 7: Fast Harvesting (Skip Validation)
+
+```bash
+# Warning: May include non-working proxies
+python -m webscraper https://example.com --use_proxy --auto_harvest --no_validate
+```
+
+### Example 8: Custom Delays and Proxy Settings
+
+```bash
+python -m webscraper https://example.com --use_proxy --auto_harvest --countries US,UK \
+  --delay_min 2.5 --delay_max 7.5 --min_proxies 20
 ```
 
 ## Output Format
@@ -99,9 +142,26 @@ Scraped data is saved in the `/data/` directory as JSON files. Each file is name
 }
 ```
 
-## Proxy File Format
+## Proxy Harvesting Details
 
-If using proxy rotation, create a text file with one proxy per line:
+### How It Works
+
+1. **Harvesting Phase**: When `--auto_harvest` is enabled, the tool scrapes multiple proxy provider websites
+2. **Country Filtering**: If `--countries` is specified, only proxies from those countries are collected
+3. **Validation Phase**: Each harvested proxy is tested against a real endpoint (Google.com by default)
+4. **Speed Ranking**: Valid proxies are sorted by response time (fastest first)
+5. **Auto-Refresh**: During scraping, if proxy count falls below `--min_proxies`, new ones are automatically harvested
+
+### Harvested Proxy Sources
+
+- **free-proxy-list.net**: Large list of HTTP/HTTPS proxies with country info
+- **sslproxies.org**: SSL/HTTPS proxies only
+- **proxyscrape.com**: API-based proxy source with country filtering
+- **geonode.com**: API with detailed proxy information
+
+### Proxy File Format
+
+If using manual proxy rotation with `--proxy_file`, create a text file with one proxy per line:
 
 ```
 http://proxy1.example.com:8080
@@ -109,18 +169,23 @@ http://proxy2.example.com:8080
 http://proxy3.example.com:8080
 ```
 
+When using `--auto_harvest`, valid proxies are automatically saved to `harvested_proxies.txt` for reuse.
+
 ## Project Structure
 
 ```
 WebScraper/
 ├── webscraper/
-│   ├── __init__.py       # Package initialization
-│   ├── __main__.py       # Command-line interface
-│   └── scraper.py        # Core scraping logic
-├── data/                 # Output directory for scraped data
-├── requirements.txt      # Python dependencies
-├── Dockerfile           # Docker configuration
-└── README.md            # This file
+│   ├── __init__.py          # Package initialization
+│   ├── __main__.py          # Command-line interface
+│   ├── scraper.py           # Core scraping logic with proxy integration
+│   ├── proxy_harvester.py   # Proxy harvesting from multiple sources
+│   └── proxy_validator.py   # Proxy validation and testing
+├── data/                    # Output directory for scraped data
+├── requirements.txt         # Python dependencies
+├── Dockerfile              # Docker configuration
+├── .gitignore              # Git ignore rules
+└── README.md               # This file
 ```
 
 ## Dependencies
