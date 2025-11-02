@@ -9,7 +9,22 @@ from .scraper import WebScraper
 
 def main():
     parser = argparse.ArgumentParser(
-        description="WebScraper - A Python-based web scraping tool with evasion techniques"
+        description="WebScraper - Web scraping tool with proxy harvesting and evasion techniques",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic scraping without proxies
+  python -m webscraper https://example.com
+
+  # Scraping with auto-harvested proxies
+  python -m webscraper https://example.com --use_proxy --auto_harvest
+
+  # Scraping with US-only proxies
+  python -m webscraper https://example.com --use_proxy --auto_harvest --countries US
+
+  # Scraping with multiple countries
+  python -m webscraper https://example.com --use_proxy --auto_harvest --countries US,UK,CA
+        """
     )
     parser.add_argument("url", help="URL to scrape")
     parser.add_argument(
@@ -46,15 +61,41 @@ def main():
     parser.add_argument(
         "--use_proxy",
         action="store_true",
-        help="Enable proxy rotation (requires proxy list)"
+        help="Enable proxy rotation"
     )
     parser.add_argument(
         "--proxy_file",
         type=str,
         help="Path to file containing proxy list (one per line)"
     )
+    parser.add_argument(
+        "--auto_harvest",
+        action="store_true",
+        help="Automatically harvest proxies from online sources"
+    )
+    parser.add_argument(
+        "--countries",
+        type=str,
+        help="Comma-separated list of country codes for proxy filtering (e.g., US,UK,CA)"
+    )
+    parser.add_argument(
+        "--no_validate",
+        action="store_true",
+        help="Skip proxy validation (faster but may include non-working proxies)"
+    )
+    parser.add_argument(
+        "--min_proxies",
+        type=int,
+        default=10,
+        help="Minimum number of proxies to maintain (triggers auto-harvest) (default: 10)"
+    )
 
     args = parser.parse_args()
+
+    # Parse countries argument
+    countries = None
+    if args.countries:
+        countries = [c.strip().upper() for c in args.countries.split(',')]
 
     try:
         scraper = WebScraper(
@@ -64,10 +105,14 @@ def main():
             delay_min=args.delay_min,
             delay_max=args.delay_max,
             use_proxy=args.use_proxy,
-            proxy_file=args.proxy_file
+            proxy_file=args.proxy_file,
+            auto_harvest=args.auto_harvest,
+            harvest_countries=countries,
+            validate_proxies=not args.no_validate,
+            min_proxies=args.min_proxies
         )
 
-        print(f"Starting web scraping for: {args.url}")
+        print(f"\nStarting web scraping for: {args.url}\n")
         scraper.scrape(args.url)
         print("\nScraping completed successfully!")
         print(f"Data saved to: {args.output_dir}")

@@ -11,6 +11,8 @@ import requests
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from .proxy_harvester import ProxyHarvester
+from .proxy_validator import ProxyValidator
 
 
 class WebScraper:
@@ -30,7 +32,11 @@ class WebScraper:
         delay_min=1.0,
         delay_max=5.0,
         use_proxy=False,
-        proxy_file=None
+        proxy_file=None,
+        auto_harvest=False,
+        harvest_countries=None,
+        validate_proxies=True,
+        min_proxies=10
     ):
         """
         Initialize the WebScraper.
@@ -43,12 +49,20 @@ class WebScraper:
             delay_max: Maximum delay between requests (seconds)
             use_proxy: Enable proxy rotation
             proxy_file: Path to file containing proxy list
+            auto_harvest: Automatically harvest proxies if none provided or list is low
+            harvest_countries: List of country codes for proxy harvesting (e.g., ['US', 'UK'])
+            validate_proxies: Validate harvested proxies before use
+            min_proxies: Minimum number of proxies to maintain (triggers auto-harvest)
         """
         self.output_dir = output_dir
         self.max_depth = max_depth
         self.delay_min = delay_min
         self.delay_max = delay_max
         self.use_proxy = use_proxy
+        self.auto_harvest = auto_harvest
+        self.harvest_countries = harvest_countries
+        self.validate_proxies = validate_proxies
+        self.min_proxies = min_proxies
         self.visited_urls = set()
         self.session = requests.Session()
 
@@ -57,8 +71,16 @@ class WebScraper:
 
         # Initialize proxy list
         self.proxies = []
+        self.proxy_dicts = []  # Store full proxy info including country
+
+        # Load proxies from file if provided
         if use_proxy and proxy_file:
             self._load_proxies(proxy_file)
+
+        # Auto-harvest proxies if enabled and needed
+        if use_proxy and auto_harvest and len(self.proxies) < min_proxies:
+            print(f"\n[Auto-Harvest] Current proxies: {len(self.proxies)}, minimum required: {min_proxies}")
+            self._harvest_proxies()
 
         # Create output directory
         os.makedirs(self.output_dir, exist_ok=True)
@@ -75,6 +97,50 @@ class WebScraper:
             print(f"Loaded {len(self.proxies)} proxies")
         except FileNotFoundError:
             print(f"Warning: Proxy file '{proxy_file}' not found. Continuing without proxies.")
+
+    def _harvest_proxies(self):
+        """Harvest proxies from online sources."""
+        print("\n" + "=" * 70)
+        print("Starting Proxy Harvesting...")
+        print("=" * 70)
+
+        # Create harvester instance
+        harvester = ProxyHarvester(
+            countries=self.harvest_countries,
+            protocols=['http', 'https']
+        )
+
+        # Harvest proxies
+        harvested_proxies = harvester.harvest()
+
+        if not harvested_proxies:
+            print("\nWarning: No proxies were harvested. Continuing without proxies.")
+            return
+
+        # Validate proxies if enabled
+        if self.validate_proxies:
+            print("\nValidating harvested proxies...")
+            validator = ProxyValidator(timeout=10, max_workers=20)
+            valid_proxies = validator.validate(harvested_proxies, verbose=False)
+
+            if valid_proxies:
+                self.proxy_dicts = valid_proxies
+                self.proxies = [p['url'] for p in valid_proxies]
+                print(f"\n[Auto-Harvest] Successfully added {len(self.proxies)} valid proxies")
+
+                # Save valid proxies to file for future use
+                harvester.proxies_list = valid_proxies
+                harvester.save_to_file('harvested_proxies.txt', format='url')
+            else:
+                print("\nWarning: No valid proxies found after validation.")
+        else:
+            # Use all harvested proxies without validation
+            self.proxy_dicts = harvested_proxies
+            self.proxies = [p['url'] for p in harvested_proxies]
+            print(f"\n[Auto-Harvest] Added {len(self.proxies)} proxies (not validated)")
+
+            # Save proxies to file
+            harvester.save_to_file('harvested_proxies.txt', format='url')
 
     def _clear_data(self):
         """Clear existing data in output directory."""
@@ -254,6 +320,13 @@ class WebScraper:
             for link in crawlable_links:
                 self._crawl(link, depth + 1)
 
+    def _check_and_refresh_proxies(self):
+        """Check if proxy count is below minimum and refresh if needed."""
+        if self.auto_harvest and self.use_proxy and len(self.proxies) < self.min_proxies:
+            print(f"\n[Auto-Harvest] Proxy count ({len(self.proxies)}) below minimum ({self.min_proxies})")
+            print("[Auto-Harvest] Refreshing proxy pool...")
+            self._harvest_proxies()
+
     def scrape(self, url):
         """
         Start scraping from a given URL.
@@ -268,6 +341,14 @@ class WebScraper:
         print(f"Max Depth: {self.max_depth}")
         print(f"Delay Range: {self.delay_min}s - {self.delay_max}s")
         print(f"Proxy Rotation: {'Enabled' if self.use_proxy else 'Disabled'}")
+
+        if self.use_proxy:
+            print(f"Active Proxies: {len(self.proxies)}")
+            if self.auto_harvest:
+                print(f"Auto-Harvest: Enabled (min: {self.min_proxies} proxies)")
+                if self.harvest_countries:
+                    print(f"Country Filter: {', '.join(self.harvest_countries)}")
+
         print(f"Output Directory: {self.output_dir}")
         print("=" * 70)
 

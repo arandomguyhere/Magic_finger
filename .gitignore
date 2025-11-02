@@ -44,6 +44,8 @@ data/*.html
 
 # Proxy files (optional, uncomment if you want to ignore)
 # proxies.txt
+harvested_proxies.txt
+valid_proxies.txt
 
 # Logs
 *.log
