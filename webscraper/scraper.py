@@ -120,7 +120,8 @@ class WebScraper:
         # Validate proxies if enabled
         if self.validate_proxies:
             print("\nValidating harvested proxies...")
-            validator = ProxyValidator(timeout=10, max_workers=20)
+            # Enable geo verification to ensure proxies are from correct countries
+            validator = ProxyValidator(timeout=10, max_workers=20, verify_geo=True)
             valid_proxies = validator.validate(harvested_proxies, verbose=False)
 
             if valid_proxies:

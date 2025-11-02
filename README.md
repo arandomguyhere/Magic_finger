@@ -21,6 +21,11 @@ A Python-based web scraping tool that automatically harvests country-specific pr
   - proxyscrape.com
   - geonode.com
 - **Proxy Validation**: Tests harvested proxies to ensure they're working before use
+- **🌍 Geographic Verification**: Verifies proxies actually originate from their claimed countries
+  - Tests actual exit IP address
+  - Confirms geographic location matches claimed country
+  - Filters out mismatched/fake country proxies
+  - Essential for geo-restricted content scraping
 - **Auto-Refresh**: Automatically harvests new proxies when the pool falls below minimum threshold
 - **Protocol Support**: Supports HTTP, HTTPS, SOCKS4, and SOCKS5 proxies
 
@@ -130,6 +135,37 @@ python -m webscraper https://example.com --use_proxy --auto_harvest --no_validat
 python -m webscraper https://example.com --use_proxy --auto_harvest --countries US,UK \
   --delay_min 2.5 --delay_max 7.5 --min_proxies 20
 ```
+
+## 🌍 Geographic Verification (For Geo-Restricted Content)
+
+When scraping geo-restricted content, you need to verify that proxies are **actually** from the countries they claim. Use the geo-verification tool:
+
+### Windows
+```cmd
+REM Test and verify proxies from Russia, China, Iran
+test_proxy_geo.bat RU,CN,IR
+
+REM Use the verified proxies
+python -m webscraper https://your-geo-blocked-site.com --use_proxy --proxy_file verified_proxies_simple.txt
+```
+
+### Linux/Mac
+```bash
+# Test and verify proxies from Russia, China, Iran
+python test_proxy_geo.py RU,CN,IR
+
+# Use the verified proxies
+python -m webscraper https://your-geo-blocked-site.com --use_proxy --proxy_file verified_proxies_simple.txt
+```
+
+**What it does:**
+- ✅ Tests if each proxy works
+- ✅ Determines the **actual** exit IP address websites will see
+- ✅ Verifies the proxy's **actual** country matches its claimed country
+- ✅ Filters out fake/mismatched proxies
+- ✅ Saves only geo-verified working proxies
+
+**📖 For detailed information, see [GEO_VERIFICATION.md](GEO_VERIFICATION.md)**
 
 ## Output Format
 
