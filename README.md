@@ -1,8 +1,37 @@
 # WebScraper with Proxy Harvesting
 
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/docker-supported-blue.svg)](https://www.docker.com/)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)]()
+
 **Version 2.1.0**
 
 A Python-based web scraping tool that automatically harvests country-specific proxies and uses advanced evasion techniques to avoid detection. This tool combines web scraping capabilities with intelligent proxy management for maximum effectiveness and anonymity.
+
+## Table of Contents
+
+- [Features](#features)
+  - [Core Scraping Features](#core-scraping-features)
+  - [Async Browser-Based Scraping](#async-browser-based-scraping-new)
+  - [Proxy Harvesting & Management](#proxy-harvesting--management)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Command-Line Arguments](#command-line-arguments)
+- [Examples](#examples)
+- [Async Browser-Based Scraping](#async-browser-based-scraping)
+- [Geographic Verification](#geographic-verification-for-geo-restricted-content)
+- [Output Format](#output-format)
+- [Proxy Harvesting Details](#proxy-harvesting-details)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+- [Additional Documentation](#additional-documentation)
+- [Testing](#testing)
+- [Important Notes](#important-notes)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Disclaimer](#disclaimer)
 
 ## Features
 
