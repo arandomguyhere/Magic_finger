@@ -1,5 +1,7 @@
 # WebScraper with Proxy Harvesting
 
+**Version 2.1.0**
+
 A Python-based web scraping tool that automatically harvests country-specific proxies and uses advanced evasion techniques to avoid detection. This tool combines web scraping capabilities with intelligent proxy management for maximum effectiveness and anonymity.
 
 ## Features
@@ -312,7 +314,7 @@ When using `--auto_harvest`, valid proxies are automatically saved to `harvested
 ```
 WebScraper/
 ├── webscraper/
-│   ├── __init__.py          # Package initialization
+│   ├── __init__.py          # Package initialization (exports main classes)
 │   ├── __main__.py          # Command-line interface (sync)
 │   ├── async_cli.py         # Command-line interface (async)
 │   ├── scraper.py           # Core scraping logic with proxy integration
@@ -323,10 +325,18 @@ WebScraper/
 │   ├── logger.py            # Logging utilities
 │   └── utils.py             # Helper utilities
 ├── data/                    # Output directory for scraped data
+├── test_async_scraper.py    # Test suite for async scraper module
+├── test_proxy_geo.py        # Geographic verification tool for proxies
+├── test_proxy_geo.bat       # Windows batch script for geo verification
+├── quick_test.sh            # Quick test script for all features
 ├── requirements.txt         # Python dependencies
-├── Dockerfile              # Docker configuration
-├── .gitignore              # Git ignore rules
-└── README.md               # This file
+├── Dockerfile               # Docker configuration
+├── .gitignore               # Git ignore rules
+├── README.md                # This file
+├── TESTING.md               # Comprehensive testing guide
+├── GEO_VERIFICATION.md      # Geographic proxy verification documentation
+├── CODE_REVIEW.md           # Code review and architecture notes
+└── IMPROVEMENTS.md          # Planned improvements and changelog
 ```
 
 ## Dependencies
@@ -341,6 +351,27 @@ WebScraper/
 - `pyppeteer`: Headless Chrome/Chromium automation
 - `faker`: Generate random referrers, resolutions, and other data
 - `tqdm`: Progress bars for batch operations
+
+## Additional Documentation
+
+- **[TESTING.md](TESTING.md)**: Comprehensive testing guide with step-by-step instructions for all features
+- **[GEO_VERIFICATION.md](GEO_VERIFICATION.md)**: Detailed documentation for geographic proxy verification
+- **[CODE_REVIEW.md](CODE_REVIEW.md)**: Code review notes and architecture documentation
+- **[IMPROVEMENTS.md](IMPROVEMENTS.md)**: Planned improvements, feature roadmap, and changelog
+
+## Testing
+
+Run the async scraper test suite to verify your installation:
+
+```bash
+python test_async_scraper.py
+```
+
+For comprehensive testing of all features, see [TESTING.md](TESTING.md) or run:
+
+```bash
+./quick_test.sh
+```
 
 ## Important Notes
 
