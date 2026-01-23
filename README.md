@@ -12,6 +12,14 @@ A Python-based web scraping tool that automatically harvests country-specific pr
 - **Recursive Crawling**: Automatically discovers and crawls linked pages up to a configurable depth
 - **JSON Output**: Stores scraped data in structured JSON format
 
+### Async Browser-Based Scraping (New)
+- **Pyppeteer Integration**: Uses headless Chrome/Chromium for JavaScript-rendered pages
+- **Concurrent Batch Processing**: Execute multiple requests simultaneously with configurable limits
+- **Automatic Retry with Exponential Backoff**: Handles failures gracefully with smart retry logic
+- **Random Referrers & Resolutions**: Generates randomized referrer URLs and screen resolutions
+- **Interactive Mode**: CLI interface for on-the-fly scraping sessions
+- **Progress Tracking**: Real-time progress bars for batch operations
+
 ### Proxy Harvesting & Management
 - **Automatic Proxy Harvesting**: Scrapes proxies from multiple free proxy provider websites
 - **Country-Specific Filtering**: Filter proxies by country codes (e.g., US, UK, CA, etc.)
@@ -136,6 +144,98 @@ python -m webscraper https://example.com --use_proxy --auto_harvest --countries 
   --delay_min 2.5 --delay_max 7.5 --min_proxies 20
 ```
 
+## Async Browser-Based Scraping
+
+For JavaScript-heavy sites or when you need browser-level scraping, use the async scraper module powered by Pyppeteer.
+
+### Async Scraper Usage
+
+```bash
+# Basic batch scraping (10 concurrent requests)
+python -m webscraper.async_cli https://example.com --batch-size 10
+
+# With proxy harvesting
+python -m webscraper.async_cli https://example.com --batch-size 20 --use-proxy --auto-harvest
+
+# With country-specific proxies
+python -m webscraper.async_cli https://example.com --batch-size 20 --use-proxy --auto-harvest --countries US,UK
+
+# High concurrency scraping
+python -m webscraper.async_cli https://example.com --batch-size 50 --max-concurrent 20
+
+# Run in visible browser mode (non-headless)
+python -m webscraper.async_cli https://example.com --batch-size 5 --headful
+
+# Interactive mode
+python -m webscraper.async_cli --interactive
+```
+
+### Async CLI Arguments
+
+| Argument | Type | Default | Description |
+|----------|------|---------|-------------|
+| `url` | string | required | URL to scrape (not required in interactive mode) |
+| `--batch-size` | int | 10 | Number of requests per batch |
+| `--max-concurrent` | int | 10 | Maximum concurrent requests |
+| `--max-retries` | int | 3 | Maximum retries per request |
+| `--use-proxy` | flag | false | Enable proxy rotation |
+| `--auto-harvest` | flag | false | Automatically harvest proxies |
+| `--countries` | string | None | Comma-separated country codes (e.g., US,UK,CA) |
+| `--num-referrers` | int | 100 | Number of referrers to generate |
+| `--num-resolutions` | int | 50 | Number of screen resolutions to generate |
+| `--headful` | flag | false | Run browser in visible mode |
+| `--interactive` | flag | false | Run in interactive mode |
+| `--no-progress` | flag | false | Disable progress bar |
+
+### Programmatic Usage
+
+```python
+from webscraper import AsyncScraper, run_async_scraper
+
+# Quick usage with convenience function
+total, successful = run_async_scraper(
+    url="https://example.com",
+    batch_size=10,
+    max_concurrent=5,
+    use_proxy=True,
+    auto_harvest=True
+)
+
+# Full control with AsyncScraper class
+import asyncio
+
+async def main():
+    scraper = AsyncScraper(
+        max_concurrent=10,
+        max_retries=3,
+        use_proxy=True,
+        auto_harvest_proxies=True,
+        harvest_countries=['US', 'UK']
+    )
+
+    # Generate random referrers and resolutions
+    referrers = scraper.generate_referrers(100)
+    resolutions = scraper.generate_resolutions(50)
+
+    # Batch scrape single URL
+    total, successful = await scraper.scrape_batch(
+        url="https://example.com",
+        batch_size=20,
+        referrers=referrers,
+        resolutions=resolutions
+    )
+
+    # Or scrape multiple URLs
+    urls = ["https://example1.com", "https://example2.com"]
+    results = await scraper.scrape_urls(urls)
+
+    # Get statistics
+    stats = scraper.get_stats()
+    print(f"Success rate: {stats['success_rate']:.1f}%")
+
+asyncio.run(main())
+```
+
 ## 🌍 Geographic Verification (For Geo-Restricted Content)
 
 When scraping geo-restricted content, you need to verify that proxies are **actually** from the countries they claim. Use the geo-verification tool:
@@ -213,10 +313,15 @@ When using `--auto_harvest`, valid proxies are automatically saved to `harvested
 WebScraper/
 ├── webscraper/
 │   ├── __init__.py          # Package initialization
-│   ├── __main__.py          # Command-line interface
+│   ├── __main__.py          # Command-line interface (sync)
+│   ├── async_cli.py         # Command-line interface (async)
 │   ├── scraper.py           # Core scraping logic with proxy integration
+│   ├── async_scraper.py     # Async browser-based scraping with Pyppeteer
 │   ├── proxy_harvester.py   # Proxy harvesting from multiple sources
-│   └── proxy_validator.py   # Proxy validation and testing
+│   ├── proxy_validator.py   # Proxy validation and testing
+│   ├── config.py            # Configuration settings
+│   ├── logger.py            # Logging utilities
+│   └── utils.py             # Helper utilities
 ├── data/                    # Output directory for scraped data
 ├── requirements.txt         # Python dependencies
 ├── Dockerfile              # Docker configuration
@@ -226,10 +331,16 @@ WebScraper/
 
 ## Dependencies
 
+### Core Dependencies
 - `requests`: HTTP library for making web requests
 - `beautifulsoup4`: HTML parsing and link extraction
 - `lxml`: Fast XML/HTML parser
 - `fake-useragent`: User-Agent string rotation
+
+### Async Scraping Dependencies
+- `pyppeteer`: Headless Chrome/Chromium automation
+- `faker`: Generate random referrers, resolutions, and other data
+- `tqdm`: Progress bars for batch operations
 
 ## Important Notes
 
