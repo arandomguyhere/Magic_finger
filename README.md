@@ -31,7 +31,7 @@ A Python-based web scraping tool that automatically harvests country-specific pr
   - proxyscrape.com
   - geonode.com
 - **Proxy Validation**: Tests harvested proxies to ensure they're working before use
-- **🌍 Geographic Verification**: Verifies proxies actually originate from their claimed countries
+- **Geographic Verification**: Verifies proxies actually originate from their claimed countries
   - Tests actual exit IP address
   - Confirms geographic location matches claimed country
   - Filters out mismatched/fake country proxies
@@ -238,7 +238,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## 🌍 Geographic Verification (For Geo-Restricted Content)
+## Geographic Verification (For Geo-Restricted Content)
 
 When scraping geo-restricted content, you need to verify that proxies are **actually** from the countries they claim. Use the geo-verification tool:
 
@@ -261,13 +261,13 @@ python -m webscraper https://your-geo-blocked-site.com --use_proxy --proxy_file 
 ```
 
 **What it does:**
-- ✅ Tests if each proxy works
-- ✅ Determines the **actual** exit IP address websites will see
-- ✅ Verifies the proxy's **actual** country matches its claimed country
-- ✅ Filters out fake/mismatched proxies
-- ✅ Saves only geo-verified working proxies
+- Tests if each proxy works
+- Determines the **actual** exit IP address websites will see
+- Verifies the proxy's **actual** country matches its claimed country
+- Filters out fake/mismatched proxies
+- Saves only geo-verified working proxies
 
-**📖 For detailed information, see [GEO_VERIFICATION.md](GEO_VERIFICATION.md)**
+**For detailed information, see [GEO_VERIFICATION.md](GEO_VERIFICATION.md)**
 
 ## Output Format
 
